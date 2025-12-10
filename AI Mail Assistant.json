@@ -1,0 +1,199 @@
+{
+  "name": "AI Mail Assistant",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "filters": {}
+      },
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        0,
+        0
+      ],
+      "id": "7641b278-62a7-48cd-964a-2c0ed60ec88e",
+      "name": "Gmail Trigger",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "ESti8ymZZGYKpylU",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "messageId": "={{ $json.id }}"
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        208,
+        0
+      ],
+      "id": "b0a9c117-4825-4490-b8dd-aca189d859cb",
+      "name": "Get a message",
+      "webhookId": "5f95b52c-e2cd-40a6-a872-bb5681686821",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "ESti8ymZZGYKpylU",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Hey You are Ai Helping Ai Assistant and replying the email with suggestion and resources\n\nbelow are the inputs\n\nSubject :  {{ $json.Subject }}\n\nBody    :  {{ $json.snippet }}\n\nbased on the request in the email check them in chatgpt for better resources and respond them with it in a new email. and in the email dont mention Dear [ recipient's name] mention as dear boss",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        416,
+        0
+      ],
+      "id": "ba18629b-3220-4957-98e9-accfc0b0ae60",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        288,
+        208
+      ],
+      "id": "63572b7b-0a05-482e-aeef-353f24f16c31",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "6YYugzvKIxBzdL1n",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.id }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        432,
+        208
+      ],
+      "id": "d686aa36-cc74-412d-8d5b-3dd59f756245",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "sendTo": "bdileepabd@gmail.com",
+        "subject": " Requested Resources",
+        "emailType": "text",
+        "message": "=HI There Mate!\nThere are the Resources \nResources : {{ $json.output }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        768,
+        48
+      ],
+      "id": "f500506c-ca9f-47c1-b49c-f8bb815f81fd",
+      "name": "Send a message",
+      "webhookId": "f664e166-4bfe-460d-976f-048832ebdbc9",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "ESti8ymZZGYKpylU",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Gmail Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a message": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "d84324c8-a5e4-4824-81ee-4cbce4325d6e",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "c85aab2c6795f410b61ff10e81cd82504bb81e5111728a979055582c2e316cd5"
+  },
+  "id": "b2khmAjKelQykmzf",
+  "tags": []
+}
